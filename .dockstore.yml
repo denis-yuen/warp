@@ -126,6 +126,26 @@ workflows:
   - name: TestIlluminaGenotypingArray
     subclass: WDL
     primaryDescriptorPath: /verification/test-wdls/TestIlluminaGenotypingArray.wdl
+
+  - name: TestPairedTag
+    subclass: WDL
+    primaryDescriptorPath: /verification/test-wdls/TestPairedTag.wdl
+    
+  - name: TestOptimus
+    subclass: WDL
+    primaryDescriptorPath: /verification/test-wdls/TestOptimus.wdl
+
+  - name: TestMultiome
+    subclass: WDL
+    primaryDescriptorPath: /verification/test-wdls/TestMultiome.wdl
+
+  - name: TestReblockGVCF
+    subclass: WDL
+    primaryDescriptorPath: /verification/test-wdls/TestReblockGVCF.wdl
+
+  - name: Testsnm3C
+    subclass: WDL
+    primaryDescriptorPath: /verification/test-wdls/Testsnm3C.wdl
     
   - name: VariantCalling
     subclass: WDL

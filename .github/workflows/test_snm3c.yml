@@ -1,4 +1,4 @@
-name: Test Illumina Genotyping Array
+name: Test snm3C
 
 # Controls when the workflow will run
 on:
@@ -13,14 +13,12 @@ on:
     # SET PIPELINE SPECIFIC PATHS HERE #
     ####################################
     paths:
-      - 'pipelines/broad/genotyping/illumina/**'
-      - 'tasks/broad/IlluminaGenotypingArrayTasks.wdl'
-      - 'tasks/broad/Qc.wdl'
-      - 'verification/VerifyIlluminaGenotypingArray.wdl'
-      - 'verification/test-wdls/TestIlluminaGenotypingArray.wdl'
+      - 'pipelines/skylab/snm3C/**'
+      - 'verification/Verifysnm3C.wdl'
       - 'tasks/broad/Utilities.wdl'
+      - 'verification/test-wdls/Testsnm3C.wdl'
       - 'tasks/broad/TerraCopyFilesFromCloudToCloud.wdl'
-      - '.github/workflows/test_illumina_genotyping_array.yml'
+      - '.github/workflows/test_snm3c.yml'
 
 
   # Allows you to run this workflow manually from the Actions tab
@@ -46,9 +44,9 @@ on:
 env:
   # pipeline configuration
   PROJECT_NAME: WARP
-  PIPELINE_NAME: TestIlluminaGenotypingArray
-  DOCKSTORE_PIPELINE_NAME: IlluminaGenotypingArray
-  PIPELINE_DIR: "pipelines/broad/genotyping/illumina"
+  PIPELINE_NAME: Testsnm3C
+  DOCKSTORE_PIPELINE_NAME: snm3C-seq
+  PIPELINE_DIR: "pipelines/skylab/snm3C"
 
   # workspace configuration
   TESTING_WORKSPACE: WARP Tests
@@ -220,13 +218,13 @@ jobs:
           INPUTS_DIR="$PIPELINE_DIR/test_inputs/$TEST_TYPE"
           echo "Running tests with test type: $TEST_TYPE"
           
-          TRUTH_PATH="gs://broad-gotc-test-storage/$DOCKSTORE_PIPELINE_NAME/truth/$(echo "$TEST_TYPE" | tr '[:upper:]' '[:lower:]')/$TRUTH_BRANCH"
+          TRUTH_PATH="gs://broad-gotc-test-storage/snm3C/truth/$(echo "$TEST_TYPE" | tr '[:upper:]' '[:lower:]')/$TRUTH_BRANCH"
           echo "Truth path: $TRUTH_PATH"
-          RESULTS_PATH="gs://broad-gotc-test-storage/$DOCKSTORE_PIPELINE_NAME/results/$CURRENT_TIME"
+          RESULTS_PATH="gs://broad-gotc-test-storage/snm3C/results/$CURRENT_TIME"
           
           # Create the submission_data.json file which will be the same for all inputs
           SUBMISSION_DATA_FILE="submission_data.json"
-                    
+          
           # Use a heredoc to generate the JSON file content dynamically
           cat <<EOF > "$SUBMISSION_DATA_FILE"
           {
@@ -261,7 +259,7 @@ jobs:
                 --branch_name "$BRANCH_NAME" \
                 --sa-json-b64 "$SA_JSON_B64" \
                 --user "$USER"
-      
+          
             attempt=1
             while [ $attempt -le $MAX_RETRIES ]; do
               SUBMISSION_ID=$(python3 scripts/firecloud_api/firecloud_api.py submit_job \
@@ -270,9 +268,9 @@ jobs:
                --sa-json-b64 "$SA_JSON_B64" \
                --user "$USER" \
                --submission_data_file "$SUBMISSION_DATA_FILE")
-      
+          
               echo "Submission ID: $SUBMISSION_ID"
-            
+          
               if [[ "$SUBMISSION_ID" == *"404"* || -z "$SUBMISSION_ID" ]]; then
                   echo "Error in submission, retrying in $RETRY_DELAY seconds..."
                   ((attempt++))
@@ -283,7 +281,7 @@ jobs:
                   sleep $RETRY_DELAY
                   continue
               fi
-            
+          
               echo "Submission successful. Submission ID: $SUBMISSION_ID"
               SUBMISSION_IDS+=("$SUBMISSION_ID")
               break
@@ -291,7 +289,7 @@ jobs:
           done
           
           echo "All jobs have been submitted. Starting to poll for statuses..."
-      
+          
           # 2. After all submissions are done, start polling for statuses of all jobs
           for SUBMISSION_ID in "${SUBMISSION_IDS[@]}"; do
             attempt=1
@@ -303,7 +301,7 @@ jobs:
                   --user "$USER" \
                   --workspace-namespace "$WORKSPACE_NAMESPACE" \
                   --workspace-name "$TESTING_WORKSPACE")
-              
+          
               if [ -z "$RESPONSE" ]; then
                   echo "Failed to retrieve Workflow IDs for submission: $SUBMISSION_ID"
                   ((attempt++))
@@ -314,7 +312,7 @@ jobs:
                   sleep $RETRY_DELAY
                   continue
               fi
-      
+          
               WORKFLOW_STATUSES_FOR_SUBMISSION=$(echo "$RESPONSE" | jq -r 'to_entries | map(.key + " | " + .value) | .[]')
               WORKFLOW_STATUSES["$SUBMISSION_ID"]="$WORKFLOW_STATUSES_FOR_SUBMISSION"
           
